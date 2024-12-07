@@ -129,6 +129,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		form {
 			margin-left: 764px;
 		}
+
+		th {
+			border: 2px solid black;
+		}
 	</style>
 
 	<body>
