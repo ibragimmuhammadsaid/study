@@ -127,7 +127,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		}
 
 		form {
-			margin-left: 764px;
+			text-align: center;	
+		}
+
+		th {
+			border: 2px solid black;
+		}
+
+		h2 {
+			text-align: center;
 		}
 	</style>
 
@@ -152,6 +160,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		</tr>
 		<?php } ?>
 	</table>
+	<br><br>
 	<hr>
 
 		<!-- Add student form -->
@@ -164,7 +173,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		<label for="firstName"> First Name </label><br>
 		<input type='text' id='firstName' name='firstName'><br>
 
-		<label for="surname"> Surame </label><br>
+		<label for="surname"> Surname </label><br>
 		<input type='text' id='surname' name='surname'><br>
 
 		<label for="id"> ID </label><br>
@@ -173,12 +182,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		<label for="year"> Year </label><br>
 		<input type='text' id='year' name='year'><br>
 
-		<input type='submit' value='Submit'>
+		<input type='submit' value='Add'>
 	</form>
 
 	<hr>
 
-		<!-- Remove student form-->
+		<!-- Remove student form -->
 	<form action="" method='POST'>
 		<h2> Remove Student </h2>
 
@@ -188,12 +197,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		<label for="removeid"> ID </label><br>
 		<input type='text' id='removeid' name='removeid'><br>
 
-		<input type='submit' value='Submit'>
+		<input type='submit' value='Remove'>
 	</form>
 
 	<hr>
 
-		<!-- Update debt form-->
+		<!-- Update debt form -->
 	<form action="" method='POST'>
 		<h2> Pay Debt </h2>
 
@@ -206,7 +215,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		<label for="reduceDebt"> Reduce Amount </label><br>
 		<input type='text' id='reduceDebt' name='reduceDebt'><br>
 
-		<input type='submit' value='Submit'>
+		<input type='submit' value='Pay'>
 	</form>
 
 	</body>
