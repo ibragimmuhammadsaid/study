@@ -1,4 +1,7 @@
 <?php
+// Session initialization
+session_start();
+
 // Database connection settings
 $servername = "localhost";
 $username = "root";
@@ -14,17 +17,16 @@ if ($conn->connect_error) {
 }
 
 $sql = "SELECT CONCAT(Students.firstName, ' ', Students.Surname) AS Name, 
-	Students.ID as ID, 
-	Students.Year as Year, 
-	StudentDebts.StudentDebt as Debt
-	FROM Students
-	LEFT JOIN StudentDebts
-	ON Students.ID = StudentDebts.StudentID
-	ORDER BY Year, ID";
+		Students.ID as ID,
+		Students.Year as Year,
+		StudentDebts.StudentDebt as Debt
+		FROM Students
+		LEFT JOIN StudentDebts
+		ON Students.ID = StudentDebts.StudentID
+		ORDER BY Year, ID";
 
 $result = $conn->query($sql);
 $data = $result->fetch_all(MYSQLI_ASSOC);
-
 
 
 # ADD STUDENT FUNCTION
@@ -89,11 +91,21 @@ function updateDebt($conn, $studentData) {
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (isset($_POST['addStudent'])) {
         addStudent($conn, $_POST);
+		header("Refresh:1; url=" . $_SERVER['PHP_SELF']);
     } elseif (isset($_POST['removeStudent'])) {
         removeStudent($conn, $_POST);
+		header("Refresh:1; url=" . $_SERVER['PHP_SELF']);
     } elseif (isset($_POST['updateDebt'])) {
 		updateDebt($conn, $_POST);
+		header("Refresh:1; url=" . $_SERVER['PHP_SELF']);
+	} elseif (isset($_POST['logOut'])) {
+		session_destroy();
+		header("Location: /studentDB/auth.php");
 	}
+}
+
+function permissionLevel ($userPermission) {
+	if($userPermission == 'Admin');
 }
 ?>
 
@@ -103,69 +115,115 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <!DOCTYPE Html>
 <html>
 
-	<title> Practice </title>
-	<header style="text-align: center"> <h2> Student Database </h2> </header>
+	<title> Student Database </title>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu|Lora">
 	<style>
 		body {
 			background-color: lightblue;
+			font-family: "Times New Roman", Times, serif;
 		}
-
 		table {
 			background-color: white;
 			border: 2px solid black;
-			margin-left: auto;
-			margin-right: auto;
-			border-collapse: collapse
+			margin-left: 300px;
+			border-collapse: collapse;
+			font-size: 18px;
+			float:left
 		}
-
-		td {
-			border: 2px solid black;
+		tr {
+			height: 25px;
+			border-bottom: 2px solid black;
 		}
-
 		hr {
 			color: green;
 		}
-
 		form {
-			text-align: center;	
+			text-align: center;
+			float: right;
+			margin-right: 20px
 		}
-
-		th {
-			border: 2px solid black;
-		}
-
 		h2 {
 			text-align: center;
+			font-family: Ubuntu, sans-serif;
+		}
+		h1 {
+			text-align: center;
+			font-family: Lora, serif;
+		}
+		div {
+			background-color: lightcyan;
+			border: 2px solid lightgreen;
+			border-collapse: collapse;
+			align-items: center;
+			padding: 10px;
+			width: 200px;
+			height: 65px;
+			border-radius: 25px
+		}
+		input {
+			width: 200px;
+			height: 25px;
+			border: 1px solid black;
+			border-radius: 25px;
+			background-color: white;
+			margin: 5px
+		}
+		button {
+			width: 200px;
+			border: none;
+			background-color: white;
+			height: 20px;
+			cursor: pointer
 		}
 	</style>
 
 	<body>
+	
+	<?php if($_SESSION['permission'] == "Admin" 
+			|| $_SESSION['permission'] == "Editor" 
+			|| $_SESSION['permission'] == "Viewer") { ?>
+
+	<form action="" method="POST">
+    	<input type="hidden" name="logOut" value="1">
+    	<button type="submit">Log Out</button>
+	</form>
+
+	<header style="text-align: center"> <h2> Student Database </h2> </header>	
 
 	<table>
-		<tr style="background-color: lightgrey">
-		<th width="300"> Name </th>
-		<th width="200"> ID </th>
-		<th width="100"> Year </th>
-		<th width="200"> Debt </th>
+		<tr style="background-color: lightgreen">
+			<th width="300"> Name </th>
+			<th width="200"> ID </th>
+			<th width="100"> Year </th>
+			<th width="200"> Debt </th>
 		</tr>
 		
 		<?php foreach ($data as $value) { 
-		$colorStyle = $value["Debt"] > 0 ? 'style="color: crimson; border-color: black"' : "" ?>
+		$colorStyle = $value["Debt"] > 0 ? 'style="color: crimson; border-color: black; font-weight: bold"' : "" ?>
 		
 		<tr style="text-align:center">
 			<td <?php echo $colorStyle ?>> <?php echo $value["Name"]; ?> </td>
 			<td <?php echo $colorStyle ?>> <?php echo $value["ID"]; ?> </td>
 			<td <?php echo $colorStyle ?>> <?php echo $value["Year"]; ?> </td>
-			<td <?php echo $colorStyle ?>> <?php if ($value["Debt"]) { echo $value["Debt"] , " sum" ;} ?> </td>
+			<td <?php echo $colorStyle ?>> <?php if ($value['Debt'] > 0) { echo $value["Debt"] , " sum" ;} ?> </td>
 		</tr>
 		<?php } ?>
 	</table>
-	<br><br>
-	<hr>
+	<?php } else { ?>
+		<h1> You have no access to this page! </h1>
+
+			<form action="" method="POST">
+    			<input type="hidden" name="logOut" value="1">
+    			<button type="submit"> Authorize </button>
+			</form>
+		<?php } ?>
+
+	<?php if($_SESSION['permission'] == "Admin" 
+			|| $_SESSION['permission'] == "Editor") { ?>
 
 		<!-- Add student form -->
 	<form action="" method='POST'>
-		<h2> Add Student </h2>
+		<div> <h2> Add Student </h2> </div> <br>
 
 		<!-- addStudent hidden name -->
 		<input type="hidden" name="addStudent" value="1">
@@ -182,14 +240,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		<label for="year"> Year </label><br>
 		<input type='text' id='year' name='year'><br>
 
-		<input type='submit' value='Add'>
+		<input type='submit' value='Add' style="background-color: lightgreen; cursor: pointer">
 	</form>
+	<?php } ?>
 
-	<hr>
-
+	<?php if($_SESSION['permission'] == "Admin") { ?>
 		<!-- Remove student form -->
 	<form action="" method='POST'>
-		<h2> Remove Student </h2>
+		<div> <h2> Remove Student </h2> </div> <br>
 
 		<!-- removeStudent hidden name -->
 		<input type="hidden" name="removeStudent" value="1">
@@ -197,14 +255,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		<label for="removeid"> ID </label><br>
 		<input type='text' id='removeid' name='removeid'><br>
 
-		<input type='submit' value='Remove'>
+		<input type='submit' value='Remove' style="background-color: crimson; cursor: pointer">
 	</form>
+	<?php } ?>
+	
 
-	<hr>
-
+	<?php if($_SESSION['permission'] == "Admin" 
+			|| $_SESSION['permission'] == "Editor") { ?>
 		<!-- Update debt form -->
 	<form action="" method='POST'>
-		<h2> Pay Debt </h2>
+		<div> <h2> Pay Debt </h2> </div> <br>
 
 		<!-- updateDebt hidden name -->
 		<input type="hidden" name="updateDebt" value="1">
@@ -215,8 +275,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		<label for="reduceDebt"> Reduce Amount </label><br>
 		<input type='text' id='reduceDebt' name='reduceDebt'><br>
 
-		<input type='submit' value='Pay'>
+		<input type='submit' value='Pay' style="background-color: aqua; cursor: pointer">
 	</form>
+	<?php } ?>
 
 	</body>
 
